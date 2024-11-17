@@ -1,0 +1,199 @@
+p1
+
+CREATE SCHEMA LibraryManagement;
+
+USE LibraryManagement;
+
+CREATE TABLE authors (
+	author_id INT AUTO_INCREMENT PRIMARY KEY,
+    author_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE genres (
+	genre_id INT AUTO_INCREMENT PRIMARY KEY,
+    genre_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE books (
+	book_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    publication_year YEAR,
+    author_id INT,
+    genre_id INT,
+    FOREIGN KEY (author_id) REFERENCES authors(author_id),
+    FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
+);
+
+CREATE TABLE users (
+	user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE borrowed_books (
+	borrow_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    user_id INT,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    borrow_date DATE NOT NULL,
+    return_date DATE NOT NULL
+);
+
+______
+
+p2
+
+INSERT INTO authors (author_name) VALUES 
+('J.K. Rowling'),
+('George Orwell');
+
+INSERT INTO genres (genre_name) VALUES 
+('Fantasy'),
+('Dystopian');
+
+INSERT INTO books (title, publication_year, author_id, genre_id) VALUES 
+('Harry Potter and the Philosopher\'s Stone', 1997, 1, 1),
+('1984', 1949, 2, 2);
+
+INSERT INTO users (username, email) VALUES 
+('john_doe', 'john.doe@example.com'),
+('jane_smith', 'jane.smith@example.com');
+
+INSERT INTO borrowed_books (book_id, user_id, borrow_date, return_date) VALUES 
+(1, 1, '2024-11-01', '2024-11-15'),
+(2, 2, '2024-11-05', '2024-11-20');
+
+______
+
+p3
+
+SELECT 
+    orders.id AS order_id,
+    customers.name AS customer_name,
+    employees.first_name AS employee_first_name,
+    employees.last_name AS employee_last_name,
+    orders.date AS order_date,
+    shippers.name AS shipper_name,
+    products.name AS product_name,
+    categories.name AS category_name,
+    suppliers.name AS supplier_name,
+    order_details.quantity AS product_quantity,
+    products.price AS product_price
+FROM orders
+INNER JOIN customers ON orders.customer_id = customers.id
+INNER JOIN employees ON orders.employee_id = employees.employee_id
+INNER JOIN shippers ON orders.shipper_id = shippers.id
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+INNER JOIN suppliers ON products.supplier_id = suppliers.id;
+
+_____
+
+p4_1
+
+SELECT COUNT(*) AS total_rows
+FROM orders
+INNER JOIN customers ON orders.customer_id = customers.id
+INNER JOIN employees ON orders.employee_id = employees.employee_id
+INNER JOIN shippers ON orders.shipper_id = shippers.id
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+INNER JOIN suppliers ON products.supplier_id = suppliers.id;
+
+____
+
+p4_2
+
+SELECT COUNT(*) AS total_rows
+FROM orders
+LEFT JOIN shippers ON orders.shipper_id = shippers.id
+INNER JOIN customers ON orders.customer_id = customers.id
+INNER JOIN employees ON orders.employee_id = employees.employee_id
+LEFT JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+LEFT JOIN categories ON products.category_id = categories.id
+INNER JOIN suppliers ON products.supplier_id = suppliers.id;
+
+Кількість рядків може збільшитися, якщо є записи в таблиці orders, які не мають відповідних даних у таблицях shippers, order_details, або якщо продукти не мають категорії.
+
+____
+
+p4_3
+
+SELECT COUNT(*) AS total_rows
+FROM orders
+LEFT JOIN shippers ON orders.shipper_id = shippers.id
+INNER JOIN customers ON orders.customer_id = customers.id
+INNER JOIN employees ON orders.employee_id = employees.employee_id
+LEFT JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+LEFT JOIN categories ON products.category_id = categories.id
+INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE employees.employee_id > 3 AND employees.employee_id <= 10;
+
+____
+
+p4_4
+
+SELECT 
+    categories.name AS category_name,
+    COUNT(*) AS total_rows,
+    AVG(order_details.quantity) AS avg_quantity
+FROM orders
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+GROUP BY categories.name;
+
+____
+
+p4_5
+
+SELECT 
+    categories.name AS category_name,
+    COUNT(*) AS total_rows,
+    AVG(order_details.quantity) AS avg_quantity
+FROM orders
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+GROUP BY categories.name
+HAVING AVG(order_details.quantity) > 21;
+
+____
+
+p4_6
+
+SELECT 
+    categories.name AS category_name,
+    COUNT(*) AS total_rows,
+    AVG(order_details.quantity) AS avg_quantity
+FROM orders
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+GROUP BY categories.name
+HAVING AVG(order_details.quantity) > 21
+ORDER BY total_rows DESC;
+
+____
+
+p4_7
+
+SELECT 
+    categories.name AS category_name,
+    COUNT(*) AS total_rows,
+    AVG(order_details.quantity) AS avg_quantity
+FROM orders
+INNER JOIN order_details ON orders.id = order_details.order_id
+INNER JOIN products ON order_details.product_id = products.id
+INNER JOIN categories ON products.category_id = categories.id
+GROUP BY categories.name
+HAVING AVG(order_details.quantity) > 21
+ORDER BY total_rows DESC
+LIMIT 4 OFFSET 1;
+
+
